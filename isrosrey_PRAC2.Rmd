@@ -10,7 +10,10 @@ toc-title: "Índice"
 ---
 
 ```{r load_libraries, include=FALSE}
+library(car)
 library(dplyr)
+library(ggplot2)
+library(gridExtra)
 ```
 
 \pagebreak
@@ -70,14 +73,19 @@ str(merged_data)
 summary(merged_data)
 ```
 
+```{r}
+colSums(merged_data == "")
+```
 
-Se considera que todas las columnas pueden aportar información de interés y no
-se descarta ninguna de ellas. El campo "PassengerId" no será útil para determinar
-si un pasajero sobrevive o muere, pero se usará para recomponer los bloques de
-entrenamiento y test originales al finalizar la limpieza de los datos.
-Sin embargo, sí podemos crear algún campo adicional que podría ser útil, por ejemplo,
-un campo que indique si el pasajero es adulto o no, pero lo haremos tras limpiar
-los datos, ya que el campo "Age" tiene muchos registros sin imputar.
+Se considera que todas las columnas pueden aportar información de interés, pero 
+más adelante se descartará el campo "Cabin" porque tiene muchos elementos vacíos
+que serían difíciles de adivinar para su imputación. 
+Por otro lado, el campo "PassengerId" no será útil para determinar si un pasajero
+sobrevive o muere, pero se usará para recomponer los bloques de entrenamiento y
+prueba originales al finalizar la limpieza de los datos.
+Se podría intentar crear algún campo adicional que sea de utilidad, por ejemplo,
+un campo que agrupe los miembros de una misma familia, si un pasajero es adulto
+o no, etc.
 
 ## 3. Limpieza de datos
 
@@ -102,29 +110,27 @@ merged_data$Embarked <- as.factor(merged_data$Embarked)
 Una vez tenemos los campos con el tipo deseado, analizamos qué hacer con los
 elementos perdidos. Como hemos visto en el resumen de los datos del apartado
 anterior, existen NAs en las variables "Age" y "Fare" (además de la variable
-"Survived" que ya sabemos que los datos de test omitían este daot),
-pero también necesitamos comprobar si hay elementos en blanco:
-
-```{r}
-colSums(merged_data == "")
-```
-
-Además de los NAs de las variables anteriores, tenemos valores vacíos en las
-variables "Cabin" y "Embarked". Observando los datos ordenados por el Cabin,
-nos damos cuenta que los pasajeros con Cabin B19 al B26 han embarcado por la
-puerta de Southampton, por tanto, suponemos que a los 2 valores vacíos que
-tenían la cabina B28 asiganda, les correspondería entrar por la puerta S también.
-
-## Velo Con un gráfico??
+"Survived" que ya sabemos que los datos de test omitían este dato), y tenemos
+elementos vacíos en las variables "Cabin" y "Embarked". Observando los datos
+ordenados por el Cabin, haciendo uso del visor de RStudio, nos damos cuenta de
+que los pasajeros con Cabin B19 al B26 han embarcado por la puerta de Southampton,
+por tanto, suponemos que a los 2 valores vacíos que tenían la cabina B28 asiganda,
+les correspondería entrar por la puerta S también.
 
 ```{r}
 merged_data$Embarked[merged_data$Embarked == ""] <- "S"
 ```
 
-Una vez hemos completado la variable "Embarked" vamos a asignar la media de la
-edad de las mujeres y la de los hombres a los pasajeros que no tienen este dato:
+Una vez hemos completado la variable "Embarked" basándonos en los valores del
+Cabin, eliminamos la columna "Cabin" y asignamos la media de edad de las mujeres
+y la de los hombres:
 
 ```{r}
+# Eliminamos la columna "Cabin" del dataset
+merged_data <- subset(merged_data, select=-Cabin)
+# Comprobamos que no hay valores extremos sin sentido (como gente de 150 años
+# por ejemplo)
+boxplot(merged_data$Age, names="Edad", main="Edades")
 # Hallamos la media de la edad de las mujeres y de los hombres
 femaleMeanAge <- mean(merged_data$Age[merged_data$Sex == "female"], na.rm=T)
 maleMeanAge <- mean(merged_data$Age[merged_data$Sex == "male"], na.rm=T)
@@ -143,12 +149,21 @@ merged_data$Fare[is.na(merged_data$Fare)] <- mean(merged_data$Fare, na.rm=T)
 sum(is.na(merged_data$Fare))
 ```
 
+```{r}
+summary(merged_data)
+```
 
+Valores extremos
 
 ```{r}
-which(is.na(merged_data$Fare))
-train_data[train_data$Embarked == "", ]
+g1 <- ggplot(merged_data, aes(y=Age)) + geom_boxplot()
+g2 <- ggplot(merged_data, aes(y=SibSp)) + geom_boxplot()
+g3 <- ggplot(merged_data, aes(y=Parch)) + geom_boxplot()
+g4 <- ggplot(merged_data, aes(y=Fare)) + geom_boxplot()
+grid.arrange(g1,g2, g3, g4, nrow=2)
 ```
+
+
 
 ```{r}
 # Al finalizar la limpieza de datos con el dataset completo, restauramos los bloques
@@ -159,6 +174,22 @@ cleaned_test <- merged_data[merged_data$PassengerId %in% c(892:1309), ]
 
 
 ## 4. Análisis de los datos
+
+```{r}
+# Comprobamos la normalidad con 2 test, el de Kolmogorov-Smirnov y de Shapiro-Wilk.
+ks.test(merged_data$Age, pnorm, mean(merged_data$Age), sd(merged_data$Age))
+shapiro.test(merged_data$Age)
+# No sigue distribución normal por tener p-value inferior a 0.05
+```
+```{r}
+# Comprobamos la homocedasticidad
+# Test de Levene para casos que cumplen la normalidad
+leveneTest(Age ~ Survived, data = merged_data)
+# Test de Fligner-Killeen para los que no cumplen la condición de normalidad
+fligner.test(Age ~ Survived, data = merged_data)
+# Tiene valor inferior a 0.05 por lo que indica heterocedasticidad
+```
+
 
 ## 5. Resultados
 
