@@ -1,6 +1,8 @@
 # Práctica 2: Limpieza y validación de los datos
 
-## Información de los pasajeros del Titanic
+## Titanic - Machine Learning from Disaster
+
+En esta práctica se utiliza el dataset de iniciación en Kaggle que trata sobre el hundimiento del Titanic. Este dataset se divide en dos grupos, el de entrenamiento y el de pruebas, y se diferencian en que el dataset de pruebas omite la columna de supervivencia para que los usuarios traten de deducir si los pasajeros de este grupo han sobrevivido o han perecido durante el hundimiento, para lo que se usarán técnicas de análisis de datos.
 
 ## Autor
 
