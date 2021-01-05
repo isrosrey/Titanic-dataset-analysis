@@ -26,4 +26,4 @@ Puede chequear el resultado obtenido de las predicciones en la siguiente direcci
 ## Licencia
 
 El contenido de este proyecto esta licencia bajo la [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/), 
-y el código fuente usadao para mostrar este contenido esta licenciado bajo la  [MIT license](http://opensource.org/licenses/mit-license.php).
+y el código fuente usado para mostrar este contenido esta licenciado bajo la  [MIT license](http://opensource.org/licenses/mit-license.php).
