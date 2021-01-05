@@ -491,9 +491,9 @@ write.csv(solution, file = '../data/randForestSolution.csv', row.names = F)
 tabl <- "
 |        Contribuciones        | Firma    |
 |------------------------------|:--------:|
-| Investigación previa         | isrosrey |
-| Redacción de las respuestas  | isrosrey |
-| Desarrollo código            | isrosrey |
+| Investigación previa         |   IRR    |
+| Redacción de las respuestas  |   IRR    |
+| Desarrollo código            |   IRR    |
 "
 cat(tabl) # output the table in a format good for HTML/PDF/docx conversion
 ```
